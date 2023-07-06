@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Vault, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 // Remember to rename these classes and interfaces!
 
@@ -15,18 +15,21 @@ export default class MyPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-
+		vault: Vault;
+		const vaultName = this.app.vault.getName();
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+			// vault = this.Vault
+			new Notice(vaultName);
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
-
+		// vault: Vault;
+		// const vaultName = this.app.vault.getName();
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
+		statusBarItemEl.setText(vaultName);
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
@@ -42,7 +45,7 @@ export default class MyPlugin extends Plugin {
 			name: 'Sample editor command',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
 				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
+				editor.replaceSelection("vaultName");
 			}
 		});
 		// This adds a complex command that can check whether the current state of the app allows execution of the command
@@ -97,12 +100,12 @@ class SampleModal extends Modal {
 	}
 
 	onOpen() {
-		const {contentEl} = this;
+		const { contentEl } = this;
 		contentEl.setText('Woah!');
 	}
 
 	onClose() {
-		const {contentEl} = this;
+		const { contentEl } = this;
 		contentEl.empty();
 	}
 }
@@ -116,11 +119,11 @@ class SampleSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Settings for my awesome plugin.'});
+		containerEl.createEl('h2', { text: 'Settings for my awesome plugin.' });
 
 		new Setting(containerEl)
 			.setName('Setting #1')
