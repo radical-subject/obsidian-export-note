@@ -8,12 +8,12 @@ const fs = require('fs');
 
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
-	mySetting: string;
+interface PluginSettings {
+	export_path_setting: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+const DEFAULT_SETTINGS: PluginSettings = {
+	export_path_setting: "\\\\obsidian\\obsidian\\Лаборатория мультиомиксных исследований\\PEPTIDE_AND_OLIGOSYNTHESIS_GROUP\\OLEG_FEDOROV"
 }
 
 
@@ -61,7 +61,7 @@ export function write_data(fileName: string | undefined, file_obj: TFile | null,
 }
 
 
-export function export_note(route: string) {
+export function export_note(route: string, export_path_setting: string) {
 	// console.log(editor.getSelection());
 
 	vault: Vault;
@@ -107,7 +107,7 @@ export function export_note(route: string) {
 	}
 	let embeds = this.app.metadataCache.getCache(notePath)?.embeds;
 	let links = this.app.metadataCache.getCache(notePath)?.links;
-	console.log(links)
+	// console.log(links)
 	// links in format -- are not parsed - why?
 	// [Formalin-Fixative.pdf](app://obsidian.md/Formalin-Fixative.pdf)  
 	if (links) {
@@ -132,12 +132,16 @@ export function export_note(route: string) {
 
 	if (route != "..") {
 
+		// plugin: MyPlugin;
+
+		
+		// "/mnt/sdb1/coding/test_vault/test_vault"
 		// "\\\\obsidian\\obsidian\\Лаборатория мультиомиксных исследований\\PEPTIDE_AND_OLIGOSYNTHESIS_GROUP\\OLEG_FEDOROV"
-		nested_directory = "/mnt/sdb1/coding/test_vault/test_vault" + path.sep + "attachments";
+		nested_directory = export_path_setting + path.sep + "attachments";
 		export_dir = require('path').resolve(nested_directory, '..');
 	}
 
-	// console.log(basePath, export_dir, attachment_paths)
+	console.log(export_path_setting, basePath, export_dir, attachment_paths)
 
 	// https://stackoverflow.com/questions/30400603/when-working-with-nodejs-fs-mkdir-what-is-the-importance-of-including-callbacks
 	if (!fs.existsSync(nested_directory)) {
@@ -156,29 +160,32 @@ export function export_note(route: string) {
 
 
 export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+	settings: PluginSettings;
 
 	async onload() {
 		await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('atom', 'Export-Note-Plugin', (evt: MouseEvent) => {
 
-			let basePath;
-			let nested_directory;
-			let export_dir;
+			// let basePath;
+			// let nested_directory;
+			// let export_dir;
 		
-			basePath = (
-				app.vault.adapter as FileSystemAdapter
-			).getBasePath();
+			// basePath = (
+			// 	app.vault.adapter as FileSystemAdapter
+			// ).getBasePath();
 	
 
-			nested_directory = require('path').resolve(basePath, '..') + path.sep + "exported" + path.sep + "attachments";
-			export_dir = nested_directory
-			console.log(export_dir)
+			// nested_directory = require('path').resolve(basePath, '..') + path.sep + "exported" + path.sep + "attachments";
+			// export_dir = nested_directory
+			// console.log(export_dir)
+
+			const export_path_setting = this.settings.export_path_setting
+			// console.log(export_path_setting)
 			
 			const route = ''
-			export_note(route)
+			export_note(route, export_path_setting)
 
 			// Called when the user clicks the icon.
 			// const editor = new Editor;
@@ -202,7 +209,8 @@ export default class MyPlugin extends Plugin {
 		// 	}
 		// });
 
-
+		// This adds a settings tab so the user can configure various aspects of the plugin
+		this.addSettingTab(new SettingTab(this.app, this));
 
 		// This adds an editor command that can perform some operation on the current editor instance
 		this.addCommand({
@@ -255,7 +263,7 @@ class NotificationModal extends Modal {
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
+class SettingTab extends PluginSettingTab {
 	plugin: MyPlugin;
 
 	constructor(app: App, plugin: MyPlugin) {
@@ -268,17 +276,17 @@ class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: 'Settings for my awesome plugin.' });
+		containerEl.createEl('h2', { text: 'Settings for export-note plugin.' });
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setName('export directory path (for example to other labjournal)')
+			.setDesc('path')
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder('Enter desired export path')
+				.setValue(this.plugin.settings.export_path_setting)
 				.onChange(async (value) => {
 					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.export_path_setting = value;
 					await this.plugin.saveSettings();
 				}));
 	}
